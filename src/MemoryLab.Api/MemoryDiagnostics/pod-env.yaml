@@ -1,0 +1,80 @@
+# MemoryDiagnostics: every env var and the volume the pod needs.
+# Copy the blocks into the Deployment / Helm values committed in git
+# (ArgoCD reverts changes made by hand in the cluster).
+#
+# Turn off: MemoryDiagnostics__Enabled: "0" (or remove the var) + redeploy.
+
+spec:
+  template:
+    spec:
+      containers:
+        - name: <container-name>
+          env:
+            # ---------------------------------------------------------------
+            # REQUIRED
+            # ---------------------------------------------------------------
+
+            # Start flag: "1" or "true" = on, anything else / missing = off
+            - name: MemoryDiagnostics__Enabled
+              value: "1"
+
+            # Folder for the threshold dump (must be the mounted volume, /app is not writable in OpenShift)
+            - name: MemoryDiagnostics__DumpDirectory
+              value: /dumps
+
+            # ---------------------------------------------------------------
+            # MONITOR (optional, the values below are the defaults)
+            # ---------------------------------------------------------------
+
+            # How often memory is logged (seconds)
+            - name: MemoryDiagnostics__IntervalSeconds
+              value: "15"
+
+            # Dump when usage reaches this % of the container limit (0 = logs only, no dump)
+            - name: MemoryDiagnostics__DumpThresholdPercent
+              value: "80"
+
+            # WithHeap (recommended) | Full | Normal | Triage
+            - name: MemoryDiagnostics__DumpType
+              value: WithHeap
+
+            # Only used when the cgroup limit cannot be read (log line shows "fallback config")
+            - name: MemoryDiagnostics__FallbackLimitMb
+              value: "512"
+
+            # ---------------------------------------------------------------
+            # DUMP ON OutOfMemoryException (optional, for .NET heap leaks)
+            # ---------------------------------------------------------------
+
+            # Terminate the process on the first OutOfMemoryException so a crash dump is written
+            - name: MemoryDiagnostics__FailFastOnOutOfMemory
+              value: "true"
+
+            # Runtime crash dump (createdump, part of the .NET runtime)
+            - name: DOTNET_DbgEnableMiniDump
+              value: "1"
+            # 1 = Mini, 2 = WithHeap (recommended), 3 = Triage, 4 = Full
+            - name: DOTNET_DbgMiniDumpType
+              value: "2"
+            # %p = PID, %t = timestamp; must be inside the mounted volume
+            - name: DOTNET_DbgMiniDumpName
+              value: /dumps/oom_%p_%t.dmp
+            # Also writes <dump>.crashreport.json with the stack of every thread
+            - name: DOTNET_EnableCrashReport
+              value: "1"
+
+            # ---------------------------------------------------------------
+            # CHECK: if the image or deployment sets DOTNET_EnableDiagnostics=0,
+            # remove it, otherwise dumps cannot be written.
+            # ---------------------------------------------------------------
+
+          volumeMounts:
+            - name: dumps
+              mountPath: /dumps
+
+      volumes:
+        # emptyDir survives the container restart after OOMKilled, deleted when the pod is deleted.
+        # Copy dumps right away: oc cp <pod>:/dumps ./dumps
+        - name: dumps
+          emptyDir:
+            sizeLimit: 2Gi

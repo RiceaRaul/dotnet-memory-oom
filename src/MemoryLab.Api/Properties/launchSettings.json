@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Uat-OOM-512": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5096",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Uat",
+        "MemoryDiagnostics__Enabled": "1",
+
+        "DOTNET_GCHeapHardLimit": "0x18000000",
+        "DOTNET_gcServer": "1",
+
+        "DOTNET_DbgEnableMiniDump": "1",
+        "DOTNET_DbgMiniDumpType": "4",
+        "DOTNET_DbgMiniDumpName": "dumps/oom_%p_%t.dmp",
+        "DOTNET_EnableCrashReport": "1",
+        "DOTNET_CreateDumpDiagnostics": "1"
+      }
+    },
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5096",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

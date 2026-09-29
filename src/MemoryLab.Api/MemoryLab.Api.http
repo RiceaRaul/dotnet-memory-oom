@@ -1,0 +1,16 @@
+@host = http://localhost:5096
+
+### Memory status
+GET {{host}}/memory
+
+### Leak 100 MB
+POST {{host}}/leak/managed?mb=100
+
+### Leak 500 MB (exceeds the 384 MB heap limit -> OOM -> auto dump)
+POST {{host}}/leak/managed?mb=500
+
+### Release everything
+POST {{host}}/reset
+
+### Native leak 100 MB (grows RSS, not the GC heap -> OOMKilled in a container, no OutOfMemoryException)
+POST {{host}}/leak/native?mb=100

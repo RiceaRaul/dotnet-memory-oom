@@ -1,0 +1,6 @@
+**/bin/
+**/obj/
+**/dumps/
+.idea/
+.vs/
+**/*.user

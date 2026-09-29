@@ -1,0 +1,9 @@
+bin/
+obj/
+.idea/
+.vs/
+*.user
+# Dumps contain config secrets and in-memory data - never commit them
+dumps*/
+*.dmp
+*.crashreport.json
